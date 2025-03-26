@@ -1,16 +1,37 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { connecToServe } from "../socket-client";
 
 defineProps<{ msg: string }>();
 
-connecToServe();
+const socket = connecToServe();
+
+const isConnected = ref(false);
+
+onMounted(() => {
+  socket.on("connect", () => {
+    isConnected.value = true;
+  });
+
+  socket.on("disconnect", () => {
+    isConnected.value = false;
+  });
+});
+
+onUnmounted(() => {
+  socket.off("connect");
+  socket.off("disconnect");
+});
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
 
-  <h3>Offline</h3>
+  <h3>{{ isConnected ? "Connected" : "Offline" }}</h3>
+
+  <ul>
+    <li>{{ socket.id }}</li>
+  </ul>
 </template>
 
 <style scoped>
