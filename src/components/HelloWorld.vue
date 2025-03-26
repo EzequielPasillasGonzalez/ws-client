@@ -6,7 +6,9 @@ defineProps<{ msg: string }>();
 
 const socket = connecToServe();
 
-const isConnected = ref(false);
+const isConnected = ref<boolean>(false);
+
+const clients = ref<string[]>([]);
 
 onMounted(() => {
   socket.on("connect", () => {
@@ -15,6 +17,13 @@ onMounted(() => {
 
   socket.on("disconnect", () => {
     isConnected.value = false;
+  });
+
+  socket.on("clients-updated", (clientsConnected: string[]) => {
+    clientsConnected.forEach((client) => {
+      clients.value.push(client);
+    });
+    console.log(clients.value);
   });
 });
 
@@ -30,7 +39,9 @@ onUnmounted(() => {
   <h3>{{ isConnected ? "Connected" : "Offline" }}</h3>
 
   <ul>
-    <li>{{ socket.id }}</li>
+    <template v-for="(client, id) in clients" :key="id">
+      <li>{{ client }}</li>
+    </template>
   </ul>
 </template>
 
